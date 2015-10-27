@@ -74,7 +74,7 @@ typedef struct {
     int texId;
     float texScale;
     int numFrames;
-    int currFrame;
+    float currFrame;
 } SceneObject;
 
 const int maxObjects = 1024; // Scenes with more than 1024 objects seem unlikely
@@ -344,10 +344,10 @@ static void addObject(int id) {
     //if monkey head or ginger bread man 40 frames else 1
     if(id == 56 || id == 57){
     	sceneObjs[nObjects].numFrames = 40;
-    	sceneObjs[nObjects].currFrame = 1;
+    	sceneObjs[nObjects].currFrame = 1.0;
     } else {
     	sceneObjs[nObjects].numFrames = 1;
-    	sceneObjs[nObjects].currFrame = 1;
+    	sceneObjs[nObjects].currFrame = 1.0;
     }
 
     toolObj = currObject = nObjects++;
@@ -424,7 +424,7 @@ void init( void ) {
 
 //----------------------------------------------------------------------------
 
-void drawMesh(SceneObject sceneObj) {
+void drawMesh(SceneObject& sceneObj) {
 
     // Activate a texture, loading if needed.
     loadTextureIfNotAlreadyLoaded(sceneObj.texId);
@@ -469,13 +469,21 @@ void drawMesh(SceneObject sceneObj) {
    
   	float POSE_TIME;
     if(sceneObj.numFrames > 1){
-    	POSE_TIME = sceneObj.currFrame % sceneObj.numFrames;
-    	sceneObj.currFrame = sceneObj.currFrame + 1;
-    	cout << sceneObj.currFrame << endl;
+
+    	POSE_TIME = sceneObj.currFrame - 1;
+
+    	if(sceneObj.currFrame >= (float)(sceneObj.numFrames + 1)){
+    		sceneObj.currFrame = 1.0;
+    	}else{
+    		sceneObj.currFrame += 0.2;
+    	}
+
+    	cout << sceneObj.numFrames << endl;
+    	cout << POSE_TIME << endl;
+
     }else{
     	POSE_TIME = 0;
     }
-    cout << POSE_TIME << endl;
     
     calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, POSE_TIME, boneTransforms);
     glUniformMatrix4fv(uBoneTransforms, nBones, GL_TRUE, (const GLfloat *)boneTransforms);

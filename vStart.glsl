@@ -30,6 +30,6 @@ void main()
     // Transform vertex normal into eye coordinates (assumes scaling is uniform across dimensions)
     v_Normal = normalize( (ModelView * boneTransform * vec4(vNormal, 0.0)).xyz );
 
-    gl_Position = Projection * ModelView * vPosition;
+    gl_Position = Projection * ModelView * boneTransform * vPosition;
     texCoord = vTexCoord;
 }
