@@ -430,6 +430,13 @@ void init( void ) {
     glClearColor( 0.0, 0.0, 0.0, 1.0 ); /* black background */
 }
 
+void circleRun(SceneObject& sceneObj){
+	sceneObj.loc[0] = sceneObj.loc[0] - 0.05 * cos(sceneObj.distance);
+	sceneObj.loc[2] = sceneObj.loc[2] - 0.05 * sin(sceneObj.distance);
+	sceneObj.angles[1] = sceneObj.angles[1] - cos(sceneObj.distance);
+	sceneObj.distance += 0.03;
+}
+
 //----------------------------------------------------------------------------
 
 void drawMesh(SceneObject& sceneObj) {
@@ -462,13 +469,11 @@ void drawMesh(SceneObject& sceneObj) {
     	}else{
     		sceneObj.currFrame += 0.2;
     	}
-    	cout << sceneObj.numFrames << endl;
-    	cout << POSE_TIME << endl;
 
     }else{
     	POSE_TIME = 0;
     }
-    distance_tranveled  += sceneObj.speed;
+    /*distance_tranveled  += sceneObj.speed;
     cout << "distance traveled is"   << distance_tranveled << endl;
     sceneObj.loc[2] = sceneObj.loc[2] + sceneObj.speed;
     if(distance_tranveled  >= sceneObj.distance ){
@@ -476,6 +481,9 @@ void drawMesh(SceneObject& sceneObj) {
     }
     if(distance_tranveled  <= 0){
         sceneObj.speed = -sceneObj.speed;
+    }*/
+    if(sceneObj.meshId == 56 || sceneObj.meshId == 57){
+    	circleRun(sceneObj);
     }
     /*************************Part 2*********************************************/
     //******************Part B*************************************
@@ -508,6 +516,7 @@ void drawMesh(SceneObject& sceneObj) {
 
     glDrawElements(GL_TRIANGLES, meshes[sceneObj.meshId]->mNumFaces * 3, GL_UNSIGNED_INT, NULL); CheckError();
 }
+//----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
 
