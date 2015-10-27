@@ -48,7 +48,7 @@ aiMesh* meshes[numMeshes]; // For each mesh we have a pointer to the mesh to dra
 
 //******* PART 2 *****************
    const aiScene* scenes[numMeshes];
-   float distance_tranveled = 0;
+
 //********************************
 
 GLuint vaoIDs[numMeshes]; // and a corresponding VAO ID from glGenVertexArrays
@@ -78,6 +78,7 @@ typedef struct {
     float currFrame;
     float speed;
     float distance;
+    float distance_tranveled;
 } SceneObject;
 
 const int maxObjects = 1024; // Scenes with more than 1024 objects seem unlikely
@@ -344,12 +345,13 @@ static void addObject(int id) {
     sceneObjs[nObjects].texId = rand() % numTextures;
     sceneObjs[nObjects].texScale = 2.0;
     /***********************Part 2************************/
+    sceneObjs[nObjects].distance_tranveled = 0;             //initial distance travelled is always 0
     //if monkey head or ginger bread man 40 frames else 1
     if(id == 56 || id == 57){
     	sceneObjs[nObjects].numFrames = 40;
     	sceneObjs[nObjects].currFrame = 1.0;
     	sceneObjs[nObjects].speed = 0.001;
-    	sceneObjs[nObjects].distance = 0.2;
+    	sceneObjs[nObjects].distance = 0.5;
     } else {
     	sceneObjs[nObjects].numFrames = 1;
     	sceneObjs[nObjects].currFrame = 1.0;
@@ -432,6 +434,19 @@ void init( void ) {
 
 //----------------------------------------------------------------------------
 
+void StraightRun(SceneObject& sceneObj){
+    sceneObj.distance_tranveled  += sceneObj.speed;
+    //cout << "distance traveled is"   << distance_tranveled << endl;
+    sceneObj.loc[2] = sceneObj.loc[2] + sceneObj.speed;
+    if(sceneObj.distance_tranveled  >= sceneObj.distance ){                 //if the distance traveled exceed the travelling distance, revert the direction
+        sceneObj.speed = -sceneObj.speed;
+    }
+    if(sceneObj.distance_tranveled  <= 0){                                  //if went back to the origin point, revert the direction
+        sceneObj.speed = -sceneObj.speed;
+    }
+    return;
+}
+
 void drawMesh(SceneObject& sceneObj) {
 
     // Activate a texture, loading if needed.
@@ -452,7 +467,7 @@ void drawMesh(SceneObject& sceneObj) {
 
     // Set the model matrix - this should combine translation, rotation and scaling based on what's
     // in the sceneObj structure (see near the top of the program).
-    /***************************Part 2*****************************************/
+    /***************************Part 2   part D*****************************************/
     float POSE_TIME;
     if(sceneObj.numFrames > 1){
 
@@ -462,22 +477,23 @@ void drawMesh(SceneObject& sceneObj) {
     	}else{
     		sceneObj.currFrame += 0.2;
     	}
-    	cout << sceneObj.numFrames << endl;
-    	cout << POSE_TIME << endl;
+    	//cout << sceneObj.numFrames << endl;
+    	//cout << POSE_TIME << endl;
 
     }else{
     	POSE_TIME = 0;
     }
-    distance_tranveled  += sceneObj.speed;
-    cout << "distance traveled is"   << distance_tranveled << endl;
+    sceneObj.distance_tranveled  += sceneObj.speed;
+    //cout << "distance traveled is"   << distance_tranveled << endl;
     sceneObj.loc[2] = sceneObj.loc[2] + sceneObj.speed;
-    if(distance_tranveled  >= sceneObj.distance ){
+    if(sceneObj.distance_tranveled  >= sceneObj.distance ){                 //if the distance traveled exceed the travelling distance, revert the direction
         sceneObj.speed = -sceneObj.speed;
     }
-    if(distance_tranveled  <= 0){
+    if(sceneObj.distance_tranveled  <= 0){                                  //if went back to the origin point, revert the direction
         sceneObj.speed = -sceneObj.speed;
     }
-    /*************************Part 2*********************************************/
+    StraightRun(sceneObj);
+    /******************************************************************************************/
     //******************Part B*************************************
     mat4 model =  Translate(sceneObj.loc) * RotateZ(sceneObj.angles[2]) * RotateY(sceneObj.angles[1]) * RotateX(sceneObj.angles[0])  * Scale(sceneObj.scale);
     //*************************************************************
@@ -739,7 +755,20 @@ static void adjustAngleZTexscale(vec2 az_ts) {
     sceneObjs[currObject].angles[0]+=az_ts[0];              //changed the angle it rotate
     sceneObjs[currObject].texScale+=az_ts[1];
 }
-
+/********************************************Part 2 part D****************************************************/
+static void adjust_Speed_Distance(vec2 sd) {
+    cout << sd << endl;
+     for(int i=0; i<nObjects; i++) {
+        cout << "inside for loop" << endl;
+        SceneObject *so = &sceneObjs[i];
+        if(so->meshId == 56 || so->meshId == 57 ){        //if object is a ginger man or a monkey head
+            cout << "found the ginger man" << endl;
+            so->speed  +=sd[0];                            //changing the speed of the object
+            so->distance +=sd[1];                        //changing the traveling distance of the object
+        }
+     }
+}
+/****************************************************************************************************************/
 
 
 
@@ -757,6 +786,13 @@ static void mainmenu(int id) {
         setToolCallbacks(adjustAngleYX, mat2(400, 0, 0, -400),
                          adjustAngleZTexscale, mat2(400, 0, 0, 15) );
     }
+    /************* PART 2 part D ***********************************************************************************/
+    //if entry is pressed and there is more than 0 object in the scene editor
+    if(id == 56 && currObject>=0) {
+        setToolCallbacks(adjust_Speed_Distance, mat2(0.05, 0, 10, 10),
+                         adjust_Speed_Distance, mat2(0.05, 0, 10, 10) );
+    }
+    /****************************************************************************************************************/
     if(id == 99) exit(0);
     if(id == 42){
 	dupeObject();
@@ -793,6 +829,11 @@ static void makeMenu() {
     glutAddSubMenu("Add object", objectId);
     glutAddMenuEntry("Position/Scale", 41);
     glutAddMenuEntry("Rotation/Texture Scale", 55);
+
+    /************* PART 2 part D **********************/
+    glutAddMenuEntry("Speed/Traveling Distance", 56);               //menu entry for changing the speed and distance of  all the existing giger man and mondy head in the scene editor
+    /**************************************************/
+
     glutAddSubMenu("Material", materialMenuId);
     glutAddSubMenu("Texture",texMenuId);
     glutAddSubMenu("Ground Texture",groundMenuId);
