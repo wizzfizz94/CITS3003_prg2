@@ -73,6 +73,8 @@ typedef struct {
     int meshId;
     int texId;
     float texScale;
+    int numFrames;
+    int currFrame;
 } SceneObject;
 
 const int maxObjects = 1024; // Scenes with more than 1024 objects seem unlikely
@@ -314,6 +316,9 @@ static void dupeObject() {
 
 static void addObject(int id) {
 
+	cout << id << endl;
+
+
     vec2 currPos = currMouseXYworld(camRotSidewaysDeg);
     sceneObjs[nObjects].loc[0] = currPos[0];
     sceneObjs[nObjects].loc[1] = 0.0;
@@ -335,6 +340,15 @@ static void addObject(int id) {
     sceneObjs[nObjects].meshId = id;
     sceneObjs[nObjects].texId = rand() % numTextures;
     sceneObjs[nObjects].texScale = 2.0;
+
+    //if monkey head or ginger bread man 40 frames else 1
+    if(id == 56 || id == 57){
+    	sceneObjs[nObjects].numFrames = 40;
+    	sceneObjs[nObjects].currFrame = 1;
+    } else {
+    	sceneObjs[nObjects].numFrames = 1;
+    	sceneObjs[nObjects].currFrame = 1;
+    }
 
     toolObj = currObject = nObjects++;
     setToolCallbacks(adjustLocXZ, camRotZ(),
@@ -451,8 +465,19 @@ void drawMesh(SceneObject sceneObj) {
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
     //    (Replace <POSE_TIME> appropriately with a float expression giving the time relative to
     //     the start of the animation, measured in frames, like the frame numbers in Blender.)
-     mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
-    calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, 0.1, boneTransforms);
+    mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
+   
+  	float POSE_TIME;
+    if(sceneObj.numFrames > 1){
+    	POSE_TIME = sceneObj.currFrame % sceneObj.numFrames;
+    	sceneObj.currFrame = sceneObj.currFrame + 1;
+    	cout << sceneObj.currFrame << endl;
+    }else{
+    	POSE_TIME = 0;
+    }
+    cout << POSE_TIME << endl;
+    
+    calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, POSE_TIME, boneTransforms);
     glUniformMatrix4fv(uBoneTransforms, nBones, GL_TRUE, (const GLfloat *)boneTransforms);
     //**************
 
