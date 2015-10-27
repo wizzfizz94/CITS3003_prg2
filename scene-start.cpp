@@ -48,6 +48,7 @@ aiMesh* meshes[numMeshes]; // For each mesh we have a pointer to the mesh to dra
 
 //******* PART 2 *****************
    const aiScene* scenes[numMeshes];
+   float distance_tranveled = 0;
 //********************************
 
 GLuint vaoIDs[numMeshes]; // and a corresponding VAO ID from glGenVertexArrays
@@ -75,6 +76,8 @@ typedef struct {
     float texScale;
     int numFrames;
     float currFrame;
+    float speed;
+    float distance;
 } SceneObject;
 
 const int maxObjects = 1024; // Scenes with more than 1024 objects seem unlikely
@@ -132,7 +135,7 @@ void loadMeshIfNotAlreadyLoaded(int meshNumber) {
     if(meshes[meshNumber] != NULL)
         return; // Already loaded
 
-    //**********PART 2****************** 
+    //**********PART 2******************
     const aiScene* scene = loadScene(meshNumber);
     scenes[meshNumber] = scene;
     aiMesh* mesh = scene->mMeshes[0];
@@ -190,12 +193,12 @@ void loadMeshIfNotAlreadyLoaded(int meshNumber) {
 
     GLuint buffers[2];
     glGenBuffers( 2, buffers );  // Add two vertex buffer objects
-    
+
     glBindBuffer( GL_ARRAY_BUFFER, buffers[0] ); CheckError();
     glBufferData( GL_ARRAY_BUFFER, sizeof(int)*4*mesh->mNumVertices, boneIDs, GL_STATIC_DRAW ); CheckError();
     glVertexAttribIPointer(vBoneIDs, 4, GL_INT, 0, BUFFER_OFFSET(0)); CheckError();
     glEnableVertexAttribArray(vBoneIDs);     CheckError();
-    
+
     glBindBuffer( GL_ARRAY_BUFFER, buffers[1] );
     glBufferData( GL_ARRAY_BUFFER, sizeof(float)*4*mesh->mNumVertices, boneWeights, GL_STATIC_DRAW );
     glVertexAttribPointer(vBoneWeights, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
@@ -290,15 +293,15 @@ static void dupeObject() {
     sceneObjs[nObjects].shine = sceneObjs[currObject].shine;
 
     sceneObjs[nObjects].angles[0] = sceneObjs[currObject].angles[0];
-    sceneObjs[nObjects].rgb[2] = sceneObjs[currObject].rgb[2]; 
+    sceneObjs[nObjects].rgb[2] = sceneObjs[currObject].rgb[2];
     sceneObjs[nObjects].brightness = sceneObjs[currObject].brightness;
 
-    sceneObjs[nObjects].diffuse = sceneObjs[currObject].diffuse; 
+    sceneObjs[nObjects].diffuse = sceneObjs[currObject].diffuse;
     sceneObjs[nObjects].specular = sceneObjs[currObject].specular;
-    sceneObjs[nObjects].ambient = sceneObjs[currObject].ambient; 
+    sceneObjs[nObjects].ambient = sceneObjs[currObject].ambient;
     sceneObjs[nObjects].shine = sceneObjs[currObject].shine;
 
-    sceneObjs[nObjects].angles[0] = sceneObjs[currObject].angles[0]; 
+    sceneObjs[nObjects].angles[0] = sceneObjs[currObject].angles[0];
     sceneObjs[nObjects].angles[1] = sceneObjs[currObject].angles[1];
     sceneObjs[nObjects].angles[2] = sceneObjs[currObject].angles[2];
 
@@ -340,16 +343,21 @@ static void addObject(int id) {
     sceneObjs[nObjects].meshId = id;
     sceneObjs[nObjects].texId = rand() % numTextures;
     sceneObjs[nObjects].texScale = 2.0;
-
+    /***********************Part 2************************/
     //if monkey head or ginger bread man 40 frames else 1
     if(id == 56 || id == 57){
     	sceneObjs[nObjects].numFrames = 40;
     	sceneObjs[nObjects].currFrame = 1.0;
+    	sceneObjs[nObjects].speed = 0.001;
+    	sceneObjs[nObjects].distance = 0.2;
     } else {
     	sceneObjs[nObjects].numFrames = 1;
     	sceneObjs[nObjects].currFrame = 1.0;
+    	sceneObjs[nObjects].speed = 0;
+    	sceneObjs[nObjects].distance = 0;
     }
 
+    /***********************Part 2************************/
     toolObj = currObject = nObjects++;
     setToolCallbacks(adjustLocXZ, camRotZ(),
                      adjustScaleY, mat2(0.05, 0, 0, 10.0) );
@@ -444,7 +452,32 @@ void drawMesh(SceneObject& sceneObj) {
 
     // Set the model matrix - this should combine translation, rotation and scaling based on what's
     // in the sceneObj structure (see near the top of the program).
+    /***************************Part 2*****************************************/
+    float POSE_TIME;
+    if(sceneObj.numFrames > 1){
 
+    	POSE_TIME = sceneObj.currFrame - 1;
+    	if(sceneObj.currFrame >= (float)(sceneObj.numFrames + 1)){
+    		sceneObj.currFrame = 1.0;
+    	}else{
+    		sceneObj.currFrame += 0.2;
+    	}
+    	cout << sceneObj.numFrames << endl;
+    	cout << POSE_TIME << endl;
+
+    }else{
+    	POSE_TIME = 0;
+    }
+    distance_tranveled  += sceneObj.speed;
+    cout << "distance traveled is"   << distance_tranveled << endl;
+    sceneObj.loc[2] = sceneObj.loc[2] + sceneObj.speed;
+    if(distance_tranveled  >= sceneObj.distance ){
+        sceneObj.speed = -sceneObj.speed;
+    }
+    if(distance_tranveled  <= 0){
+        sceneObj.speed = -sceneObj.speed;
+    }
+    /*************************Part 2*********************************************/
     //******************Part B*************************************
     mat4 model =  Translate(sceneObj.loc) * RotateZ(sceneObj.angles[2]) * RotateY(sceneObj.angles[1]) * RotateX(sceneObj.angles[0])  * Scale(sceneObj.scale);
     //*************************************************************
@@ -466,25 +499,9 @@ void drawMesh(SceneObject& sceneObj) {
     //    (Replace <POSE_TIME> appropriately with a float expression giving the time relative to
     //     the start of the animation, measured in frames, like the frame numbers in Blender.)
     mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
-   
-  	float POSE_TIME;
-    if(sceneObj.numFrames > 1){
 
-    	POSE_TIME = sceneObj.currFrame - 1;
 
-    	if(sceneObj.currFrame >= (float)(sceneObj.numFrames + 1)){
-    		sceneObj.currFrame = 1.0;
-    	}else{
-    		sceneObj.currFrame += 0.2;
-    	}
 
-    	cout << sceneObj.numFrames << endl;
-    	cout << POSE_TIME << endl;
-
-    }else{
-    	POSE_TIME = 0;
-    }
-    
     calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, POSE_TIME, boneTransforms);
     glUniformMatrix4fv(uBoneTransforms, nBones, GL_TRUE, (const GLfloat *)boneTransforms);
     //**************
