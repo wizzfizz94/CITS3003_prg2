@@ -79,8 +79,6 @@ typedef struct {
     float speed;
     float distance;
     float distance_tranveled;
-    bool circleRun;
-    float theta;
 } SceneObject;
 
 const int maxObjects = 1024; // Scenes with more than 1024 objects seem unlikely
@@ -276,14 +274,41 @@ static void doRotate() {
 
 static void dupeObject() {
 
-    sceneObjs[nObjects] = sceneObjs[currObject];
-
     //get new position
     vec2 currPos = currMouseXYworld(camRotSidewaysDeg);
     sceneObjs[nObjects].loc[0] = currPos[0];
     sceneObjs[nObjects].loc[1] = 0.0;
     sceneObjs[nObjects].loc[2] = currPos[1];
     sceneObjs[nObjects].loc[3] = 1.0;
+
+    sceneObjs[nObjects].scale = sceneObjs[currObject].scale;
+
+    sceneObjs[nObjects].rgb[0] =sceneObjs[currObject].rgb[0];
+    sceneObjs[nObjects].rgb[1] = sceneObjs[currObject].rgb[1];
+    sceneObjs[nObjects].rgb[2] = sceneObjs[currObject].rgb[2];
+    sceneObjs[nObjects].brightness = sceneObjs[currObject].brightness;
+
+    sceneObjs[nObjects].diffuse = sceneObjs[currObject].diffuse;
+    sceneObjs[nObjects].specular = sceneObjs[currObject].specular;
+    sceneObjs[nObjects].ambient = sceneObjs[currObject].ambient;
+    sceneObjs[nObjects].shine = sceneObjs[currObject].shine;
+
+    sceneObjs[nObjects].angles[0] = sceneObjs[currObject].angles[0];
+    sceneObjs[nObjects].rgb[2] = sceneObjs[currObject].rgb[2];
+    sceneObjs[nObjects].brightness = sceneObjs[currObject].brightness;
+
+    sceneObjs[nObjects].diffuse = sceneObjs[currObject].diffuse;
+    sceneObjs[nObjects].specular = sceneObjs[currObject].specular;
+    sceneObjs[nObjects].ambient = sceneObjs[currObject].ambient;
+    sceneObjs[nObjects].shine = sceneObjs[currObject].shine;
+
+    sceneObjs[nObjects].angles[0] = sceneObjs[currObject].angles[0];
+    sceneObjs[nObjects].angles[1] = sceneObjs[currObject].angles[1];
+    sceneObjs[nObjects].angles[2] = sceneObjs[currObject].angles[2];
+
+    sceneObjs[nObjects].meshId = sceneObjs[currObject].meshId;
+    sceneObjs[nObjects].texId = sceneObjs[currObject].texId;
+    sceneObjs[nObjects].texScale = sceneObjs[currObject].texScale;
 
     toolObj = currObject = nObjects++;
     setToolCallbacks(adjustLocXZ, camRotZ(),
@@ -319,14 +344,8 @@ static void addObject(int id) {
     sceneObjs[nObjects].meshId = id;
     sceneObjs[nObjects].texId = rand() % numTextures;
     sceneObjs[nObjects].texScale = 2.0;
-
     /***********************Part 2************************/
-    //initial distance travelled is always 0
-    sceneObjs[nObjects].distance_tranveled = 0;
-    //circle animotion always off at start
-    sceneObjs[nObjects].circleRun = false;
-    //start circle angle
-    sceneObjs[nObjects].theta = 0.0;
+    sceneObjs[nObjects].distance_tranveled = 0;             //initial distance travelled is always 0
     //if monkey head or ginger bread man 40 frames else 1
     if(id == 56 || id == 57){
     	sceneObjs[nObjects].numFrames = 40;
@@ -339,11 +358,8 @@ static void addObject(int id) {
     	sceneObjs[nObjects].speed = 0;
     	sceneObjs[nObjects].distance = 0;
     }
-    if(id == 56){
-        sceneObjs[nObjects].angles[1] = 0;
-    }
-    /***************************************************/
 
+    /***********************Part 2************************/
     toolObj = currObject = nObjects++;
     setToolCallbacks(adjustLocXZ, camRotZ(),
                      adjustScaleY, mat2(0.05, 0, 0, 10.0) );
@@ -417,26 +433,10 @@ void init( void ) {
 }
 
 void circleRun(SceneObject& sceneObj){
-
-    //get origin
-    float radius = sceneObj.distance;
-    float x0 = sceneObj.loc[0] - radius * cos(sceneObj.theta);
-    float y0 = sceneObj.loc[2] - radius * sin(sceneObj.theta);
-    //update theta
-    sceneObj.theta += sceneObj.speed * 50;
-
-    //depending on direction add rot around y
-    float rotation;
-    if(sceneObj.speed > 0){
-        rotation = -180;
-    }else{
-        rotation = 0;
-    }
-    sceneObj.angles[1] = (sceneObj.theta * -180)/M_PI + rotation;
-
-    //translate to new pos
-	sceneObj.loc[0] = x0 + radius * cos(sceneObj.theta);
-	sceneObj.loc[2] = y0 + radius * sin(sceneObj.theta);
+	sceneObj.loc[0] = sceneObj.loc[0] - 0.05 * cos(sceneObj.distance);
+	sceneObj.loc[2] = sceneObj.loc[2] - 0.05 * sin(sceneObj.distance);
+	sceneObj.angles[1] = sceneObj.angles[1] - cos(sceneObj.distance);
+	sceneObj.distance += 0.03;
 }
 
 //----------------------------------------------------------------------------
@@ -484,18 +484,34 @@ void drawMesh(SceneObject& sceneObj) {
     	}else{
     		sceneObj.currFrame += 0.2;
     	}
-
-        if(sceneObj.circleRun){
-            circleRun(sceneObj);
-        }else{
-            StraightRun(sceneObj);
-        }
+<<<<<<< HEAD
+=======
+    	//cout << sceneObj.numFrames << endl;
+    	//cout << POSE_TIME << endl;
+>>>>>>> 04965eecb7055f56a05d3db1bff8166ae5627e64
 
     }else{
     	POSE_TIME = 0;
     }
+<<<<<<< HEAD
+    /*distance_tranveled  += sceneObj.speed;
+    cout << "distance traveled is"   << distance_tranveled << endl;
+=======
+    sceneObj.distance_tranveled  += sceneObj.speed;
+    //cout << "distance traveled is"   << distance_tranveled << endl;
+>>>>>>> 04965eecb7055f56a05d3db1bff8166ae5627e64
+    sceneObj.loc[2] = sceneObj.loc[2] + sceneObj.speed;
+    if(sceneObj.distance_tranveled  >= sceneObj.distance ){                 //if the distance traveled exceed the travelling distance, revert the direction
+        sceneObj.speed = -sceneObj.speed;
+    }
+    if(sceneObj.distance_tranveled  <= 0){                                  //if went back to the origin point, revert the direction
+        sceneObj.speed = -sceneObj.speed;
+    }*/
+    if(sceneObj.meshId == 56 || sceneObj.meshId == 57){
+    	circleRun(sceneObj);
+    }
+    StraightRun(sceneObj);
     /******************************************************************************************/
-   
     //******************Part B*************************************
     mat4 model =  Translate(sceneObj.loc) * RotateZ(sceneObj.angles[2]) * RotateY(sceneObj.angles[1]) * RotateX(sceneObj.angles[0])  * Scale(sceneObj.scale);
     //*************************************************************
@@ -526,6 +542,7 @@ void drawMesh(SceneObject& sceneObj) {
 
     glDrawElements(GL_TRIANGLES, meshes[sceneObj.meshId]->mNumFaces * 3, GL_UNSIGNED_INT, NULL); CheckError();
 }
+//----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
 
@@ -788,14 +805,11 @@ static void mainmenu(int id) {
         setToolCallbacks(adjustAngleYX, mat2(400, 0, 0, -400),
                          adjustAngleZTexscale, mat2(400, 0, 0, 15) );
     }
-    /************* PART 2 part D/F ***********************************************************************************/
+    /************* PART 2 part D ***********************************************************************************/
     //if entry is pressed and there is more than 0 object in the scene editor
     if(id == 56 && currObject>=0) {
         setToolCallbacks(adjust_Speed_Distance, mat2(0.05, 0, 10, 10),
                          adjust_Speed_Distance, mat2(0.05, 0, 10, 10) );
-    }
-    if(id == 57 && currObject > 0){
-        sceneObjs[currObject].circleRun = !sceneObjs[currObject].circleRun;
     }
     /****************************************************************************************************************/
     if(id == 99) exit(0);
@@ -835,12 +849,8 @@ static void makeMenu() {
     glutAddMenuEntry("Position/Scale", 41);
     glutAddMenuEntry("Rotation/Texture Scale", 55);
 
-    /************* PART 2 part D/F **********************/
-    //menu entry for changing the speed and distance of  
-    //all the existing giger man and mondy head in the scene editor
-    glutAddMenuEntry("Speed/Traveling Distance", 56);
-    //add entry for choosing circle route
-    glutAddMenuEntry("Circle/Straight Animation", 57);
+    /************* PART 2 part D **********************/
+    glutAddMenuEntry("Speed/Traveling Distance", 56);               //menu entry for changing the speed and distance of  all the existing giger man and mondy head in the scene editor
     /**************************************************/
 
     glutAddSubMenu("Material", materialMenuId);
