@@ -328,7 +328,7 @@ static void addObject(int id) {
     //start circle angle
     sceneObjs[nObjects].theta = 0.0;
     //if monkey head or ginger bread man 40 frames else 1
-    if(id == 56 || id == 57){
+    if(id == 56 || id == 57 || id == 58){
     	sceneObjs[nObjects].numFrames = 40;
     	sceneObjs[nObjects].currFrame = 1.0;
     	sceneObjs[nObjects].speed = 0.001;
@@ -339,7 +339,7 @@ static void addObject(int id) {
     	sceneObjs[nObjects].speed = 0;
     	sceneObjs[nObjects].distance = 0;
     }
-    if(id == 56){
+    if(id == 56 || id == 58){
         sceneObjs[nObjects].angles[1] = 0;
     }
     /***************************************************/
