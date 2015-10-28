@@ -433,11 +433,19 @@ void init( void ) {
 }
 
 //----------------------------------------------------------------------------
-
+/***********************************************Part 2 part D***********************************************************************/
 void StraightRun(SceneObject& sceneObj){
     sceneObj.distance_tranveled  += sceneObj.speed;
     //cout << "distance traveled is"   << distance_tranveled << endl;
-    sceneObj.loc[2] = sceneObj.loc[2] + sceneObj.speed;
+    cout << "the angle imformation is"  << " x "<< sceneObj.angles[0] <<" y " << sceneObj.angles[1] << " z "<<sceneObj.angles[2]  << endl;
+    GLfloat angleY = DegreesToRadians * (sceneObj.angles[1] - 180 ) ;
+    GLfloat angleX = DegreesToRadians * sceneObj.angles[0] ;
+    //GLfloat angleZ = DegreesToRadians * sceneObj.angles[2] ;   //rotation around z does not effect the object location
+
+    sceneObj.loc[2] = sceneObj.loc[2] + sceneObj.speed * cos(angleY);
+    sceneObj.loc[0] = sceneObj.loc[0] + sceneObj.speed * sin(angleY);
+    sceneObj.loc[1] = sceneObj.loc[1] + sceneObj.speed * sin(angleX);
+
     if(sceneObj.distance_tranveled  >= sceneObj.distance ){                 //if the distance traveled exceed the travelling distance, revert the direction
         sceneObj.speed = -sceneObj.speed;
     }
@@ -446,7 +454,7 @@ void StraightRun(SceneObject& sceneObj){
     }
     return;
 }
-
+/*********************************************************************************************************************/
 void drawMesh(SceneObject& sceneObj) {
 
     // Activate a texture, loading if needed.
@@ -482,15 +490,6 @@ void drawMesh(SceneObject& sceneObj) {
 
     }else{
     	POSE_TIME = 0;
-    }
-    sceneObj.distance_tranveled  += sceneObj.speed;
-    //cout << "distance traveled is"   << distance_tranveled << endl;
-    sceneObj.loc[2] = sceneObj.loc[2] + sceneObj.speed;
-    if(sceneObj.distance_tranveled  >= sceneObj.distance ){                 //if the distance traveled exceed the travelling distance, revert the direction
-        sceneObj.speed = -sceneObj.speed;
-    }
-    if(sceneObj.distance_tranveled  <= 0){                                  //if went back to the origin point, revert the direction
-        sceneObj.speed = -sceneObj.speed;
     }
     StraightRun(sceneObj);
     /******************************************************************************************/
