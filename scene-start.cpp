@@ -504,7 +504,7 @@ void drawMesh(SceneObject& sceneObj) {
     }
     StraightRun(sceneObj);
     /******************************************************************************************/
-   
+
     //******************Part B*************************************
     mat4 model =  Translate(sceneObj.loc) * RotateZ(sceneObj.angles[2]) * RotateY(sceneObj.angles[1]) * RotateX(sceneObj.angles[0])  * Scale(sceneObj.scale);
     //*************************************************************
@@ -772,7 +772,7 @@ static void adjust_Speed_Distance(vec2 sd) {
      for(int i=0; i<nObjects; i++) {
         cout << "inside for loop" << endl;
         SceneObject *so = &sceneObjs[i];
-        if(so->meshId == 56 || so->meshId == 57 ){        //if object is a ginger man or a monkey head
+        if(so->meshId == 56 || so->meshId == 57 || so->meshId == 58 ){        //if object is a ginger man or a monkey head
             cout << "found the ginger man" << endl;
             so->speed  +=sd[0];                            //changing the speed of the object
             so->distance +=sd[1];                        //changing the traveling distance of the object
@@ -845,7 +845,7 @@ static void makeMenu() {
     glutAddMenuEntry("Rotation/Texture Scale", 55);
 
     /************* PART 2 part D/F **********************/
-    //menu entry for changing the speed and distance of  
+    //menu entry for changing the speed and distance of
     //all the existing giger man and mondy head in the scene editor
     glutAddMenuEntry("Speed/Traveling Distance", 56);
     //add entry for choosing circle route
